@@ -134,5 +134,5 @@ This copies only `lock.lua` and `cursor.lua`; it leaves the plugin's backend and
 setup entry point intact. Python is a development helper, not a runtime dependency.
 
 The standalone state source is new. No validation or compatibility guarantee is
-implied by copying the existing modules. A license should be chosen before
-public distribution.
+implied by copying the existing modules.
+
