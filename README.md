@@ -1,4 +1,4 @@
-# fcitx5-ime.nvim — local prototype
+# fcitx5-lock.nvim — local prototype
 
 Mode-aware Fcitx5 locking and input-method cursor colors for Neovim.
 This prototype is not installed in the author's dotfiles and has not been
@@ -26,14 +26,14 @@ Add to your `init.lua` before the setup call:
 
 ```lua
 vim.pack.add {
-  { src = 'file://' .. vim.fn.expand('~/.local/share/fcitx5-ime.nvim') },
+  { src = 'file://' .. vim.fn.expand('~/.local/share/fcitx5-lock.nvim') },
 }
-require('fcitx5-ime').setup {}
+require('fcitx5-lock').setup {}
 ```
 
 `vim.pack` clones the committed local repository into its plugin directory.
 Uncommitted edits in the source checkout are not installed. After committing
-an update, use `vim.pack.update({ 'fcitx5-ime.nvim' })` to update the installed copy.
+an update, use `vim.pack.update({ 'fcitx5-lock.nvim' })` to update the installed copy.
 Once published, replace `src` with the actual repository's HTTPS URL.
 
 ### lazy.nvim
@@ -42,9 +42,9 @@ Add this entry to your existing lazy.nvim plugin specifications:
 
 ```lua
 {
-  dir = vim.fn.expand('~/.local/share/fcitx5-ime.nvim'),
-  name = 'fcitx5-ime.nvim',
-  main = 'fcitx5-ime',
+  dir = vim.fn.expand('~/.local/share/fcitx5-lock.nvim'),
+  name = 'fcitx5-lock.nvim',
+  main = 'fcitx5-lock',
   lazy = false,
   opts = {},
 }
@@ -68,7 +68,7 @@ For vim.pack, replace the empty setup options with the following. For lazy.nvim,
 use the table contents as `opts` instead of calling `setup()` yourself:
 
 ```lua
-require('fcitx5-ime').setup {
+require('fcitx5-lock').setup {
   lock = {
     enabled = true,
     ascii_im = 'keyboard-us',
