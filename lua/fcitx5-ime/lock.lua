@@ -1,6 +1,7 @@
 -- 文本模式允许中文，其余模式持续锁英文；restore=true 记忆并恢复文本选择。
 -- 重新聚焦时读取桌面选择，查询与切换串行执行。
 local M = {}
+local state = require((...):match('^(.*)%.') .. '.state')
 
 function M.setup(opts)
   if M.initialized then return end
@@ -143,7 +144,7 @@ function M.setup(opts)
     reconcile()
   end
 
-  local group = vim.api.nvim_create_augroup('fcitx5_ime_lock', { clear = true })
+  local group = vim.api.nvim_create_augroup('ime_lock', { clear = true })
   vim.api.nvim_create_autocmd('ModeChanged', {
     group = group,
     callback = mode_changed,
@@ -179,10 +180,10 @@ function M.setup(opts)
       end
     end,
   })
-  require('fcitx5-ime.state').subscribe(function(value)
+  state.subscribe(function(value)
     if stopped or not focused then return end
     if not value then warn('输入法状态缺失或未知') end
-    -- 状态源提供变化通知；锁定逻辑重新查询真实名称，支持恢复任意输入法。
+    -- 状态源只提供变化信号；真实名称由 fcitx5 查询，支持恢复任意输入法。
     capture = true
     reconcile()
   end)

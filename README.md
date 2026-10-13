@@ -55,7 +55,10 @@ mode. Disabling the cursor does not disable locking, and vice versa.
 The state source runs one `gdbus monitor` scoped to `org.fcitx.Fcitx5`.
 `NewIcon`/`NewToolTip` and service-owner changes trigger `fcitx5-remote -n`.
 Queries are coalesced; a timer covers missed signals and restarts dead monitors.
-Only changed names are published to subscribers. The lock re-queries before
+Changed names publish `zh`/`en` (or nil when unknown) to subscribers, matching the
+dotfiles backend's interface. `cursor.input_methods` selects the names classified
+as `zh`; a change between two names in the same category still emits a notification.
+The lock re-queries before
 reconciliation rather than trusting a delayed state-source observation.
 Exit cleanup stops the monitor, polling timer and state query; the lock finishes
 its own in-flight operation separately.
@@ -64,7 +67,23 @@ Fcitx5 input-method sharing settings affect other applications. This plugin does
 not create a per-editor input context. It does not implement Kitty coloring or
 keyboard-idle switching. Multiple Neovim instances each run their own monitor.
 
-The lock/cursor modules were adapted from the local Neovim configuration; the
-standalone state source is new. No validation or compatibility guarantee is
+## Keeping the shared core in sync
+
+`lock.lua` and `cursor.lua` are byte-identical copies of the dotfiles modules.
+They resolve their sibling `state` module from the name used by `require`, so no
+module-path rewriting is needed. The only backend difference lives in `state.lua`:
+the dotfiles backend watches the daemon's file, while this backend owns D-Bus
+monitoring and polling. `init.lua` is the plugin's setup entry point.
+
+After changing the dotfiles core, run:
+
+```sh
+python3 tools/sync_core.py ~/.config/nvim/lua/ime
+```
+
+This copies only `lock.lua` and `cursor.lua`; it leaves the plugin's backend and
+setup entry point intact. Python is a development helper, not a runtime dependency.
+
+The standalone state source is new. No validation or compatibility guarantee is
 implied by copying the existing modules. A license should be chosen before
 public distribution.

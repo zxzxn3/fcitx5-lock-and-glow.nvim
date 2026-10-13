@@ -16,6 +16,7 @@ function M.setup(options)
   end
   assert(options.source.poll_interval > 0, 'poll_interval must be positive')
   M.initialized = true
+  options.source.input_methods = options.cursor.input_methods
   require('fcitx5-ime.state').setup(options.source)
   local cursor = require('fcitx5-ime.cursor')
   cursor.options = options.cursor

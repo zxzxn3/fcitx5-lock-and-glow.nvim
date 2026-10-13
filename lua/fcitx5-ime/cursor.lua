@@ -1,13 +1,12 @@
--- 根据插件状态源标记指定输入法的光标；保留 guicursor 的形状与闪烁。
+-- 根据状态源标记中文光标；通过 guicursor 指定高亮组。
 
 local M = {}
 M.options = {
   enabled = true, -- Cursor color only; does not disable ime.lock.
-  color = '#ffbf69', -- Highlighted input method cursor background.
-  input_methods = { 'rime' }, -- Names reported by fcitx5-remote -n.
+  color = '#ffbf69', -- Chinese input cursor background.
 }
-local GROUP = 'Fcitx5ImeCursor'
-local state = require('fcitx5-ime.state')
+local GROUP = 'ImeCursor'
+local state = require((...):match('^(.*)%.') .. '.state')
 local base_guicursor
 local chinese = false
 local initialized = false
@@ -53,7 +52,7 @@ local function orange_guicursor()
 end
 
 local function apply(state)
-  local want = vim.tbl_contains(M.options.input_methods, state)
+  local want = state == 'zh'
   if want == chinese then
     return
   end
@@ -67,7 +66,7 @@ local function apply(state)
 end
 
 local function refresh()
-  apply(state.read() or '')
+  apply(state.read() or 'en')
 end
 
 function M.setup()
@@ -77,8 +76,8 @@ function M.setup()
     return
   end
   initialized = true
-  local group = vim.api.nvim_create_augroup('fcitx5_ime_cursor', { clear = true })
-  state.subscribe(function(value) apply(value or '') end)
+  local group = vim.api.nvim_create_augroup('ime_cursor', { clear = true })
+  state.subscribe(function(value) apply(value or 'en') end)
   vim.api.nvim_create_autocmd({ 'FocusGained', 'ColorScheme' }, {
     group = group,
     desc = '重新确认输入法状态 / 换配色后补上光标色',

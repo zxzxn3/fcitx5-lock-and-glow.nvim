@@ -2,6 +2,8 @@
 local M = {}
 local listeners = {}
 local current, process, job, timer
+local observed_name
+local input_methods
 local initialized, stopped, busy, dirty = false, false, false, false
 local last_warning
 
@@ -13,14 +15,15 @@ local function warn(message)
   vim.notify('fcitx5-ime: ' .. message, vim.log.levels.WARN)
 end
 
--- Expose the last observed name; nil means unknown, not an English input method.
+-- Shared backend contract: read()/subscribe() use 'zh', 'en', or nil (unknown).
 function M.read() return current end
 
 -- Publish only actual changes, so our own repeated queries do not create an event loop.
 local function publish(name)
-  if name == current then return end
-  current = name
-  for _, callback in ipairs(listeners) do callback(name) end
+  if name == observed_name then return end
+  observed_name = name
+  current = name and (vim.tbl_contains(input_methods, name) and 'zh' or 'en') or nil
+  for _, callback in ipairs(listeners) do callback(current) end
 end
 
 -- Coalesce signals arriving during a query into one follow-up query.
@@ -84,6 +87,7 @@ end
 
 function M.setup(options)
   if initialized then return end
+  input_methods = options.input_methods
   initialized = true
   local group = vim.api.nvim_create_augroup('fcitx5_ime_source', { clear = true })
   vim.api.nvim_create_autocmd('VimLeavePre', { group = group, callback = M.stop })
