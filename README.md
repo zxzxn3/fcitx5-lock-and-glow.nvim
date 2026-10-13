@@ -1,8 +1,10 @@
-# fcitx5-lock.nvim — local prototype
+# fcitx5-lock.nvim
 
 Mode-aware Fcitx5 locking and input-method cursor colors for Neovim.
-This prototype is not installed in the author's dotfiles and has not been
-runtime-tested. It is not yet a published plugin.
+Experimental: the locking/cursor core was tested with isolated Fcitx5 and Neovim
+instances. The revised tray-signal monitor still needs runtime verification;
+real GUI focus and Rime integration have not been verified. The author's
+dotfiles continue using their existing external state source.
 
 ## Requirements
 
@@ -10,15 +12,23 @@ runtime-tested. It is not yet a published plugin.
 - Running Fcitx5 with its D-Bus addon (`org.fcitx.Fcitx5`).
 - Neovim 0.10+ for the plugin; Neovim 0.12+ for the `vim.pack` example below.
 - `fcitx5-remote` (Fcitx5) and `gdbus` (GLib/GIO tools) on PATH.
+- Optional `dbus-monitor` for event-driven updates; otherwise polling continues.
+
+An active Fcitx5 input context is required to query or change the current input
+method. Normally the focused desktop application supplies it. In a headless or
+otherwise context-free session, Fcitx5 may return an empty name; the plugin treats
+that as unknown rather than assuming English. Tested with Fcitx5 5.1.23 and
+Neovim 0.12.6; the minimum Neovim version has not been separately tested.
 
 No Python, PyGObject, `ime-cursor` daemon, or runtime state file is needed.
-Tray signals require Fcitx5's notificationitem addon. Without those signals,
-periodic queries still work but detection can take up to the polling interval.
+Tray signals require an active Fcitx5 notificationitem addon and a registered
+StatusNotifierWatcher; installing the addon alone does not guarantee signals.
+Without those signals, periodic queries still work but detection can take up to
+the polling interval.
 
 ## Installation
 
-The repository is local-only for now. These examples intentionally use the local
-checkout; no GitHub repository URL has been assigned. Choose one plugin manager.
+Choose one plugin manager.
 
 ### vim.pack (Neovim 0.12+)
 
@@ -26,15 +36,12 @@ Add to your `init.lua` before the setup call:
 
 ```lua
 vim.pack.add {
-  { src = 'file://' .. vim.fn.expand('~/.local/share/fcitx5-lock.nvim') },
+  'https://github.com/zxzxn3/fcitx5-lock.nvim',
 }
 require('fcitx5-lock').setup {}
 ```
 
-`vim.pack` clones the committed local repository into its plugin directory.
-Uncommitted edits in the source checkout are not installed. After committing
-an update, use `vim.pack.update({ 'fcitx5-lock.nvim' })` to update the installed copy.
-Once published, replace `src` with the actual repository's HTTPS URL.
+Use `vim.pack.update({ 'fcitx5-lock.nvim' })` to update the installed copy.
 
 ### lazy.nvim
 
@@ -42,22 +49,20 @@ Add this entry to your existing lazy.nvim plugin specifications:
 
 ```lua
 {
-  dir = vim.fn.expand('~/.local/share/fcitx5-lock.nvim'),
-  name = 'fcitx5-lock.nvim',
+  'zxzxn3/fcitx5-lock.nvim',
   main = 'fcitx5-lock',
   lazy = false,
   opts = {},
 }
 ```
 
-The local `dir` loads this checkout directly. `main` selects the setup module,
-and `opts` is passed to `setup()` automatically: do not call it a second time.
-Once published, replace `dir` with the actual `owner/repository` entry.
+`main` selects the setup module, and `opts` is passed to `setup()` automatically:
+do not call it a second time.
 
-Before trying either example in this dotfiles configuration, disable the existing
-`require('ime.cursor').setup()` and `require('ime.lock').setup(...)` calls.
-Both implementations must not run at the same time. This README does not enable
-the prototype in your existing configuration.
+Disable any existing Neovim input-method lock before enabling this plugin.
+For the author's dotfiles, that means disabling `require('ime.cursor').setup()`
+and `require('ime.lock').setup(...)`. Installing this plugin does not do that
+automatically.
 
 References: [Neovim packages](https://neovim.io/doc/user/pack/),
 [lazy.nvim plugin specifications](https://lazy.folke.io/spec).
@@ -101,8 +106,12 @@ mode. Disabling the cursor does not disable locking, and vice versa.
 
 ## State source and boundaries
 
-The state source runs one `gdbus monitor` scoped to `org.fcitx.Fcitx5`.
-`NewIcon`/`NewToolTip` and service-owner changes trigger `fcitx5-remote -n`.
+The state source runs one `dbus-monitor` with narrow signal match rules:
+`NewIcon`/`NewToolTip` at `/StatusNotifierItem`, plus service-owner changes for
+`org.fcitx.Fcitx5`. Fcitx5's tray uses a separate D-Bus connection, so filtering
+tray signals by the controller's sender would miss them. Other tray items using
+the same path can trigger an extra query; their payloads are not interpreted.
+Matching signals trigger `fcitx5-remote -n`.
 Queries are coalesced; a timer covers missed signals and restarts dead monitors.
 Changed names publish `zh`/`en` (or nil when unknown) to subscribers, matching the
 dotfiles backend's interface. `cursor.input_methods` selects the names classified
@@ -115,6 +124,10 @@ its own in-flight operation separately.
 Fcitx5 input-method sharing settings affect other applications. This plugin does
 not create a per-editor input context. It does not implement Kitty coloring or
 keyboard-idle switching. Multiple Neovim instances each run their own monitor.
+
+On desktops with Fcitx5 D-Bus activation configured, a query may automatically
+start a stopped Fcitx5 service. Restart behavior therefore depends on the session
+bus configuration. Notifications are rate-limited across failure types.
 
 ## Keeping the shared core in sync
 

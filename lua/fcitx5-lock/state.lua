@@ -47,20 +47,27 @@ function M.refresh()
   else busy = false; publish(nil); warn(tostring(result)) end
 end
 
--- gdbus tracks the service owner; a dead monitor is restarted by the polling timer.
+-- Tray signals use a separate connection: match signal types, not the controller sender.
 local function monitor()
   if stopped or job then return end
+  if vim.fn.executable('dbus-monitor') ~= 1 then
+    warn('dbus-monitor unavailable; polling continues')
+    return
+  end
   local pending = ''
-  local id = vim.fn.jobstart({ 'gdbus', 'monitor', '--session', '--dest', 'org.fcitx.Fcitx5' }, {
+  local id = vim.fn.jobstart({ 'dbus-monitor', '--session', '--monitor',
+    "type='signal',interface='org.kde.StatusNotifierItem',path='/StatusNotifierItem',member='NewIcon'",
+    "type='signal',interface='org.kde.StatusNotifierItem',path='/StatusNotifierItem',member='NewToolTip'",
+    "type='signal',sender='org.freedesktop.DBus',interface='org.freedesktop.DBus',member='NameOwnerChanged',arg0='org.fcitx.Fcitx5'",
+  }, {
     on_stdout = function(_, data)
       if stopped then return end
       pending = pending .. table.concat(data, '\n')
       local lines = vim.split(pending, '\n', { plain = true })
       pending = table.remove(lines)
       for _, line in ipairs(lines) do
-        if line:find('org.kde.StatusNotifierItem.NewIcon', 1, true)
-          or line:find('org.kde.StatusNotifierItem.NewToolTip', 1, true)
-          or line:find('owned by', 1, true) or line:find('does not have an owner', 1, true) then
+        if line:match('^signal ') and (line:find('member=NewIcon', 1, true)
+          or line:find('member=NewToolTip', 1, true) or line:find('member=NameOwnerChanged', 1, true)) then
           M.refresh()
           break
         end
