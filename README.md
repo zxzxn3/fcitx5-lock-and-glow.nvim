@@ -6,17 +6,66 @@ runtime-tested. It is not yet a published plugin.
 
 ## Requirements
 
-- Linux desktop session with Fcitx5 and its session D-Bus service.
-- Neovim 0.10+.
-- `fcitx5-remote` and `gdbus` on PATH.
+- Linux desktop session with a working session D-Bus connection.
+- Running Fcitx5 with its D-Bus addon (`org.fcitx.Fcitx5`).
+- Neovim 0.10+ for the plugin; Neovim 0.12+ for the `vim.pack` example below.
+- `fcitx5-remote` (Fcitx5) and `gdbus` (GLib/GIO tools) on PATH.
 
 No Python, PyGObject, `ime-cursor` daemon, or runtime state file is needed.
 Tray signals require Fcitx5's notificationitem addon. Without those signals,
 periodic queries still work but detection can take up to the polling interval.
 
-## Setup
+## Installation
 
-Install this directory with your plugin manager, then explicitly call:
+The repository is local-only for now. These examples intentionally use the local
+checkout; no GitHub repository URL has been assigned. Choose one plugin manager.
+
+### vim.pack (Neovim 0.12+)
+
+Add to your `init.lua` before the setup call:
+
+```lua
+vim.pack.add {
+  { src = 'file://' .. vim.fn.expand('~/.local/share/fcitx5-ime.nvim') },
+}
+require('fcitx5-ime').setup {}
+```
+
+`vim.pack` clones the committed local repository into its plugin directory.
+Uncommitted edits in the source checkout are not installed. After committing
+an update, use `vim.pack.update({ 'fcitx5-ime.nvim' })` to update the installed copy.
+Once published, replace `src` with the actual repository's HTTPS URL.
+
+### lazy.nvim
+
+Add this entry to your existing lazy.nvim plugin specifications:
+
+```lua
+{
+  dir = vim.fn.expand('~/.local/share/fcitx5-ime.nvim'),
+  name = 'fcitx5-ime.nvim',
+  main = 'fcitx5-ime',
+  lazy = false,
+  opts = {},
+}
+```
+
+The local `dir` loads this checkout directly. `main` selects the setup module,
+and `opts` is passed to `setup()` automatically: do not call it a second time.
+Once published, replace `dir` with the actual `owner/repository` entry.
+
+Before trying either example in this dotfiles configuration, disable the existing
+`require('ime.cursor').setup()` and `require('ime.lock').setup(...)` calls.
+Both implementations must not run at the same time. This README does not enable
+the prototype in your existing configuration.
+
+References: [Neovim packages](https://neovim.io/doc/user/pack/),
+[lazy.nvim plugin specifications](https://lazy.folke.io/spec).
+
+## Configuration
+
+For vim.pack, replace the empty setup options with the following. For lazy.nvim,
+use the table contents as `opts` instead of calling `setup()` yourself:
 
 ```lua
 require('fcitx5-ime').setup {
