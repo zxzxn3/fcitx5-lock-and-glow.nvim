@@ -124,8 +124,3 @@ On desktops with Fcitx5 D-Bus activation configured, a query may automatically
 start a stopped Fcitx5 service. Restart behavior therefore depends on the session
 bus configuration. Notifications are rate-limited across failure types.
 
-## Migration
-
-The repository was previously named `fcitx5-lock.nvim`. Update your plugin
-manager URL and setup call to the new name. The previous
-`require('fcitx5-lock')` entry point remains available for compatibility.
