@@ -10,18 +10,18 @@ function M.setup(options)
   }, options or {})
   for _, bin in ipairs({ 'fcitx5-remote', 'gdbus' }) do
     if vim.fn.executable(bin) ~= 1 then
-      vim.notify('fcitx5-lock: missing executable ' .. bin, vim.log.levels.WARN)
+      vim.notify('fcitx5-lock-and-glow: missing executable ' .. bin, vim.log.levels.WARN)
       return
     end
   end
   assert(options.source.poll_interval > 0, 'poll_interval must be positive')
   M.initialized = true
   options.source.input_methods = options.cursor.input_methods
-  require('fcitx5-lock.state').setup(options.source)
-  local cursor = require('fcitx5-lock.cursor')
+  require('fcitx5-lock-and-glow.state').setup(options.source)
+  local cursor = require('fcitx5-lock-and-glow.cursor')
   cursor.options = options.cursor
   cursor.setup()
-  if options.lock.enabled then require('fcitx5-lock.lock').setup(options.lock) end
+  if options.lock.enabled then require('fcitx5-lock-and-glow.lock').setup(options.lock) end
 end
 
 return M

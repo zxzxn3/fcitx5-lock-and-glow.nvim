@@ -1,4 +1,4 @@
-# fcitx5-lock.nvim
+# Fcitx5 Lock & Glow
 
 Mode-aware Fcitx5 locking and input-method cursor colors for Neovim.
 Experimental: the locking/cursor core was tested with isolated Fcitx5 and Neovim
@@ -19,7 +19,6 @@ otherwise context-free session, Fcitx5 may return an empty name; the plugin trea
 that as unknown rather than assuming English. Tested with Fcitx5 5.1.23 and
 Neovim 0.12.6; the minimum Neovim version has not been separately tested.
 
-No Python, PyGObject, `ime-cursor` daemon, or runtime state file is needed.
 Tray signals require an active Fcitx5 notificationitem addon and a registered
 StatusNotifierWatcher; installing the addon alone does not guarantee signals.
 Without those signals, periodic queries still work but detection can take up to
@@ -35,12 +34,12 @@ Add to your `init.lua` before the setup call:
 
 ```lua
 vim.pack.add {
-  'https://github.com/zxzxn3/fcitx5-lock.nvim',
+  'https://github.com/zxzxn3/fcitx5-lock-and-glow.nvim',
 }
-require('fcitx5-lock').setup {}
+require('fcitx5-lock-and-glow').setup {}
 ```
 
-Use `vim.pack.update({ 'fcitx5-lock.nvim' })` to update the installed copy.
+Use `vim.pack.update({ 'fcitx5-lock-and-glow.nvim' })` to update the installed copy.
 
 ### lazy.nvim
 
@@ -48,8 +47,8 @@ Add this entry to your existing lazy.nvim plugin specifications:
 
 ```lua
 {
-  'zxzxn3/fcitx5-lock.nvim',
-  main = 'fcitx5-lock',
+  'zxzxn3/fcitx5-lock-and-glow.nvim',
+  main = 'fcitx5-lock-and-glow',
   lazy = false,
   opts = {},
 }
@@ -70,7 +69,7 @@ For vim.pack, replace the empty setup options with the following. For lazy.nvim,
 use the table contents as `opts` instead of calling `setup()` yourself:
 
 ```lua
-require('fcitx5-lock').setup {
+require('fcitx5-lock-and-glow').setup {
   lock = {
     enabled = true,
     ascii_im = 'keyboard-us',
@@ -90,7 +89,6 @@ require('fcitx5-lock').setup {
 
 These are the defaults. Requiring the module alone does not start monitoring or
 switch input methods. Setup is once per Neovim process; restart to change options.
-Do not enable this prototype alongside another Neovim input-method lock.
 
 Text-entry modes (Insert, Replace, terminal, command line, and Select) allow the
 user's choice; other modes enforce `ascii_im` while Neovim is focused.
@@ -110,27 +108,24 @@ tray signals by the controller's sender would miss them. Other tray items using
 the same path can trigger an extra query; their payloads are not interpreted.
 Matching signals trigger `fcitx5-remote -n`.
 Queries are coalesced; a timer covers missed signals and restarts dead monitors.
-Changed names publish `zh`/`en` (or nil when unknown) to subscribers, matching the
-dotfiles backend's interface. `cursor.input_methods` selects the names classified
-as `zh`; a change between two names in the same category still emits a notification.
+The cursor uses `cursor.input_methods` to distinguish highlighted input methods
+from other methods. Unknown state is handled separately. A change between two
+method names in the same category still notifies subscribers.
 The lock re-queries before
 reconciliation rather than trusting a delayed state-source observation.
 Exit cleanup stops the monitor, polling timer and state query; the lock finishes
 its own in-flight operation separately.
 
 Fcitx5 input-method sharing settings affect other applications. This plugin does
-not create a per-editor input context. It does not implement Kitty coloring or
-keyboard-idle switching. Multiple Neovim instances each run their own monitor.
+not create a per-editor input context. Multiple Neovim instances each run their
+own monitor.
 
 On desktops with Fcitx5 D-Bus activation configured, a query may automatically
 start a stopped Fcitx5 service. Restart behavior therefore depends on the session
 bus configuration. Notifications are rate-limited across failure types.
 
-## Development
+## Migration
 
-The plugin repository is the source of truth for `lock.lua`, `cursor.lua`, and
-`state.lua`. The author's dotfiles install this plugin through the plugin manager;
-there is no separate dotfiles core to synchronize.
-
-The former `tools/sync_core.py` workflow is retained in Git history only.
-
+The repository was previously named `fcitx5-lock.nvim`. Update your plugin
+manager URL and setup call to the new name. The previous
+`require('fcitx5-lock')` entry point remains available for compatibility.

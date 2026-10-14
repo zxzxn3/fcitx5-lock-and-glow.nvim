@@ -12,7 +12,7 @@ local function warn(message)
   local now = vim.uv.now()
   if last_warning and now - last_warning < 10000 then return end
   last_warning = now
-  vim.notify('fcitx5-lock: ' .. message, vim.log.levels.WARN)
+  vim.notify('fcitx5-lock-and-glow: ' .. message, vim.log.levels.WARN)
 end
 
 -- Shared backend contract: read()/subscribe() use 'zh', 'en', or nil (unknown).
