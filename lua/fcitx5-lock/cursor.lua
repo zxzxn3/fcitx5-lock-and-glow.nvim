@@ -2,7 +2,7 @@
 
 local M = {}
 M.options = {
-  enabled = true, -- Cursor color only; does not disable ime.lock.
+  enabled = true, -- Cursor color only; does not disable the lock module.
   color = '#ffbf69', -- Chinese input cursor background.
 }
 local GROUP = 'ImeCursor'

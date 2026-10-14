@@ -3,8 +3,7 @@
 Mode-aware Fcitx5 locking and input-method cursor colors for Neovim.
 Experimental: the locking/cursor core was tested with isolated Fcitx5 and Neovim
 instances. The revised tray-signal monitor still needs runtime verification;
-real GUI focus and Rime integration have not been verified. The author's
-dotfiles continue using their existing external state source.
+real GUI focus and Rime integration have not been verified.
 
 ## Requirements
 
@@ -60,9 +59,7 @@ Add this entry to your existing lazy.nvim plugin specifications:
 do not call it a second time.
 
 Disable any existing Neovim input-method lock before enabling this plugin.
-For the author's dotfiles, that means disabling `require('ime.cursor').setup()`
-and `require('ime.lock').setup(...)`. Installing this plugin does not do that
-automatically.
+Installing this plugin does not disable other locks automatically.
 
 References: [Neovim packages](https://neovim.io/doc/user/pack/),
 [lazy.nvim plugin specifications](https://lazy.folke.io/spec).
@@ -129,23 +126,11 @@ On desktops with Fcitx5 D-Bus activation configured, a query may automatically
 start a stopped Fcitx5 service. Restart behavior therefore depends on the session
 bus configuration. Notifications are rate-limited across failure types.
 
-## Keeping the shared core in sync
+## Development
 
-`lock.lua` and `cursor.lua` are byte-identical copies of the dotfiles modules.
-They resolve their sibling `state` module from the name used by `require`, so no
-module-path rewriting is needed. The only backend difference lives in `state.lua`:
-the dotfiles backend watches the daemon's file, while this backend owns D-Bus
-monitoring and polling. `init.lua` is the plugin's setup entry point.
+The plugin repository is the source of truth for `lock.lua`, `cursor.lua`, and
+`state.lua`. The author's dotfiles install this plugin through the plugin manager;
+there is no separate dotfiles core to synchronize.
 
-After changing the dotfiles core, run:
-
-```sh
-python3 tools/sync_core.py ~/.config/nvim/lua/ime
-```
-
-This copies only `lock.lua` and `cursor.lua`; it leaves the plugin's backend and
-setup entry point intact. Python is a development helper, not a runtime dependency.
-
-The standalone state source is new. No validation or compatibility guarantee is
-implied by copying the existing modules.
+The former `tools/sync_core.py` workflow is retained in Git history only.
 
