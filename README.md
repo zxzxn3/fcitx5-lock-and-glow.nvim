@@ -4,17 +4,32 @@ Mode-aware Fcitx5 locking and input-method cursor colors for Neovim.
 
 ## Demo
 
+Both demos were recorded in Neovide with `lock.restore = false`.
+
+### Cursor color
+
 Switching from English to Rime changes the cursor color in Neovide (also works
 in terminal Neovim; verified in Kitty).
 
 ![Input-method cursor colors in the upper fifth of Neovide](assets/cursor/demo-top-fifth.gif)
+
+### Mode-aware locking
+
+Type Chinese in Insert mode, press Esc, then use `hjkl` in Normal mode without
+manually switching input methods. Returning to Insert mode keeps English active
+with `restore = false`.
+
+Command-line mode (`:`, `/`, `?`) does not force English; you can choose your
+input method freely there.
+
+![English locking when leaving Insert mode](assets/lock/demo-described.gif)
 
 The buffer-tab styling shown in the demo is provided by
 [Barbar Bubbles](https://github.com/zxzxn3/barbar-bubbles.nvim), a separate plugin.
 
 Experimental: the locking/cursor core was tested with isolated Fcitx5 and Neovim
 instances. The revised tray-signal monitor still needs runtime verification;
-real GUI focus and Rime integration have not been verified.
+real GUI focus transitions have not been verified.
 
 ## Requirements
 
