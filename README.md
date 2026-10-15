@@ -20,16 +20,13 @@ manually switching input methods. Returning to Insert mode keeps English active
 with `restore = false`.
 
 Command-line mode (`:`, `/`, `?`) does not force English; you can choose your
-input method freely there.
+input method freely there. Customize this mode whitelist with
+`lock.unlocked_modes` (see [Configuration](#configuration)).
 
 ![English locking when leaving Insert mode](assets/lock/demo-described.gif)
 
 The buffer-tab styling shown in the demo is provided by
 [Barbar Bubbles](https://github.com/zxzxn3/barbar-bubbles.nvim), a separate plugin.
-
-Experimental: the locking/cursor core was tested with isolated Fcitx5 and Neovim
-instances. The revised tray-signal monitor still needs runtime verification;
-real GUI focus transitions have not been verified.
 
 ## Requirements
 
@@ -42,8 +39,7 @@ real GUI focus transitions have not been verified.
 An active Fcitx5 input context is required to query or change the current input
 method. Normally the focused desktop application supplies it. In a headless or
 otherwise context-free session, Fcitx5 may return an empty name; the plugin treats
-that as unknown rather than assuming English. Tested with Fcitx5 5.1.23 and
-Neovim 0.12.6; the minimum Neovim version has not been separately tested.
+that as unknown rather than assuming English.
 
 Tray signals require an active Fcitx5 notificationitem addon and a registered
 StatusNotifierWatcher; installing the addon alone does not guarantee signals.
@@ -147,28 +143,27 @@ on text-entry/focus changes and attempts restoration on exit.
 Cursor color follows input method names, not an input method's internal ASCII
 mode. Disabling the cursor does not disable locking, and vice versa.
 
-## State source and boundaries
+## Desktop integration
 
-The state source runs one `dbus-monitor` with narrow signal match rules:
-`NewIcon`/`NewToolTip` at `/StatusNotifierItem`, plus service-owner changes for
-`org.fcitx.Fcitx5`. Fcitx5's tray uses a separate D-Bus connection, so filtering
-tray signals by the controller's sender would miss them. Other tray items using
-the same path can trigger an extra query; their payloads are not interpreted.
-Matching signals trigger `fcitx5-remote -n`.
-Queries are coalesced; a timer covers missed signals and restarts dead monitors.
-The cursor uses `cursor.input_methods` to distinguish highlighted input methods
-from other methods. Unknown state is handled separately. A change between two
-method names in the same category still notifies subscribers.
-The lock re-queries before
-reconciliation rather than trusting a delayed state-source observation.
-Exit cleanup stops the monitor, polling timer and state query; the lock finishes
-its own in-flight operation separately.
+Input-method changes are detected through D-Bus signals, with polling as a
+fallback. Without tray signals, detection may take up to `source.poll_interval`.
+Each Neovim instance runs its own monitor, which is stopped on exit.
 
 Fcitx5 input-method sharing settings affect other applications. This plugin does
-not create a per-editor input context. Multiple Neovim instances each run their
-own monitor.
+not create a separate input context for the editor. On desktops with D-Bus
+activation, querying a stopped Fcitx5 service may start it again.
 
-On desktops with Fcitx5 D-Bus activation configured, a query may automatically
-start a stopped Fcitx5 service. Restart behavior therefore depends on the session
-bus configuration. Notifications are rate-limited across failure types.
+Cursor coloring depends on the GUI or terminal honoring Neovim's cursor-color
+settings; it has been demonstrated in Neovide and Kitty.
 
+<details>
+<summary>Validation scope</summary>
+
+The locking and cursor behavior was tested with isolated Fcitx5 5.1.23 and
+Neovim 0.12.6 instances. The demos show Rime input in Neovide; cursor coloring
+was also checked in terminal Neovim running in Kitty.
+
+Additional checks for the revised tray monitor, real GUI focus transitions,
+custom mode lists, and the minimum supported Neovim version are in progress.
+
+</details>
