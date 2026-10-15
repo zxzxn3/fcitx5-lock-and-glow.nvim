@@ -54,14 +54,14 @@ function M.setup(opts)
 
   local function retry(query)
     failures = failures + 1
-    if failures > 2 then return end
+    if failures > 8 then return end
     retry_ticket = retry_ticket + 1
     local ticket, focus_epoch = retry_ticket, epoch
     vim.defer_fn(function()
       if stopped or ticket ~= retry_ticket or focus_epoch ~= epoch then return end
       if query and focused then capture = true end
       reconcile()
-    end, 300 * failures)
+    end, 300 * math.min(failures, 3))
   end
 
   local function run(args, callback)
@@ -94,10 +94,18 @@ function M.setup(opts)
         if ticket ~= epoch then reconcile(); return end
         local name = vim.trim(out.stdout or '')
         if out.code ~= 0 or name == '' or name == 'unknown' then
-          warn('查询输入法失败：' .. vim.trim(out.stderr or ''))
+          if failures >= 2 then
+            local reason = vim.trim(out.stderr or '')
+            if reason == '' then
+              reason = out.code == 0 and '没有可用的输入法上下文（返回为空）'
+                or ('查询退出码 ' .. tostring(out.code) .. '（可能超时）')
+            end
+            warn('查询输入法失败：' .. reason)
+          end
           retry(true)
           return
         end
+        failures = 0
         -- 自己发出的切换不能改写用户偏好；聚焦时则无条件采纳桌面选择。
         if restore and (adopt or learn or (input_mode() and name ~= actual)) then
           preferred = name

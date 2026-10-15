@@ -149,6 +149,10 @@ Input-method changes are detected through D-Bus signals, with polling as a
 fallback. Without tray signals, detection may take up to `source.poll_interval`.
 Each Neovim instance runs its own monitor, which is stopped on exit.
 
+Startup queries can precede the desktop input context. The plugin retries
+locking and does not warn on the first state-source query failure; continued
+failures still produce rate-limited warnings with the query failure reason.
+
 Fcitx5 input-method sharing settings affect other applications. This plugin does
 not create a separate input context for the editor. On desktops with D-Bus
 activation, querying a stopped Fcitx5 service may start it again.

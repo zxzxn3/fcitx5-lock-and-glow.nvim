@@ -6,6 +6,7 @@ local observed_name
 local input_methods
 local initialized, stopped, busy, dirty = false, false, false, false
 local last_warning
+local failures = 0
 
 -- Bound repeated service/monitor failure notifications.
 local function warn(message)
@@ -38,8 +39,18 @@ function M.refresh()
       local name = vim.trim(out.stdout or '')
       if out.code ~= 0 or name == '' or name == 'unknown' then
         publish(nil)
-        warn('cannot query the current input method')
-      else publish(name) end
+        failures = failures + 1
+        if failures > 1 then
+          local reason = vim.trim(out.stderr or '')
+          if reason == '' then
+            reason = out.code == 0 and 'no active input context' or ('query exited with code ' .. tostring(out.code))
+          end
+          warn('cannot query the current input method: ' .. reason)
+        end
+      else
+        failures = 0
+        publish(name)
+      end
       if dirty then dirty = false; M.refresh() end
     end)
   end)
