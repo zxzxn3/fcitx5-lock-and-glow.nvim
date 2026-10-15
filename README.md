@@ -100,6 +100,7 @@ require('fcitx5-lock-and-glow').setup {
     enabled = true,
     ascii_im = 'keyboard-us',
     restore = false,
+    unlocked_modes = { 'i', 'R', 't', 'c', 's', 'S', '\019' },
   },
   cursor = {
     enabled = true,
@@ -116,8 +117,29 @@ require('fcitx5-lock-and-glow').setup {
 These are the defaults. Requiring the module alone does not start monitoring or
 switch input methods. Setup is once per Neovim process; restart to change options.
 
-Text-entry modes (Insert, Replace, terminal, command line, and Select) allow the
-user's choice; other modes enforce `ascii_im` while Neovim is focused.
+By default, text-entry modes (Insert, Replace, terminal, command line, and Select)
+allow the user's choice; other modes enforce `ascii_im` while Neovim is focused.
+`lock.unlocked_modes` replaces this list. Each entry matches the first character
+of Neovim's mode code (see `:help mode()`), so `'i'` includes Insert completion
+and `'R'` includes Virtual Replace. `'\019'` means blockwise Select (Ctrl-S).
+An empty list locks every mode while focused. For example, to also allow Visual
+mode, use:
+
+```lua
+lock = {
+  unlocked_modes = { 'i', 'R', 't', 'c', 's', 'S', '\019', 'v', 'V', '\022' },
+}
+```
+
+Here `'v'`, `'V'`, and `'\022'` cover characterwise, linewise, and blockwise
+Visual mode. This option controls both locking and, when enabled, restoration
+at the boundary between locked and unlocked modes.
+
+`lock.ascii_im` is the Fcitx5 input-method name to enforce; it need not be
+`keyboard-us`. Select the desired input method and run `fcitx5-remote -n` to find
+its name. Likewise, `cursor.input_methods` lists the names that trigger the
+highlight color; it is not restricted to Rime or Chinese.
+
 With `restore=false`, entering a text-entry mode does not restore a previous
 input method. With `restore=true`, the lock remembers and restores that choice
 on text-entry/focus changes and attempts restoration on exit.

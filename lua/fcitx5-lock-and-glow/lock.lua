@@ -39,7 +39,7 @@ function M.setup(opts)
 
   local function input_mode()
     local mode = vim.api.nvim_get_mode().mode:sub(1, 1)
-    return mode == 'i' or mode == 'R' or mode == 't' or mode == 'c' or mode == 's' or mode == 'S' or mode == '\019'
+    return vim.tbl_contains(opts.unlocked_modes, mode)
   end
 
   local was_input = input_mode()

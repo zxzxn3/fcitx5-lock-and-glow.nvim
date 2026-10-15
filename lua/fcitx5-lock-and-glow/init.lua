@@ -4,10 +4,19 @@ local M = {}
 function M.setup(options)
   if M.initialized then return end
   options = vim.tbl_deep_extend('force', {
-    lock = { enabled = true, ascii_im = 'keyboard-us', restore = false },
+    lock = {
+      enabled = true, ascii_im = 'keyboard-us', restore = false,
+      unlocked_modes = { 'i', 'R', 't', 'c', 's', 'S', '\019' },
+    },
     cursor = { enabled = true, color = '#ffbf69', input_methods = { 'rime' } },
     source = { monitor = true, poll_interval = 5000 },
   }, options or {})
+  assert(type(options.lock.unlocked_modes) == 'table' and vim.islist(options.lock.unlocked_modes),
+    'lock.unlocked_modes must be a list of single-character mode codes')
+  for _, mode in ipairs(options.lock.unlocked_modes) do
+    assert(type(mode) == 'string' and #mode == 1,
+      'lock.unlocked_modes entries must be single-character mode codes; see :help mode()')
+  end
   for _, bin in ipairs({ 'fcitx5-remote', 'gdbus' }) do
     if vim.fn.executable(bin) ~= 1 then
       vim.notify('fcitx5-lock-and-glow: missing executable ' .. bin, vim.log.levels.WARN)
