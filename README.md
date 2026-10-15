@@ -159,11 +159,13 @@ settings; it has been demonstrated in Neovide and Kitty.
 <details>
 <summary>Validation scope</summary>
 
-The locking and cursor behavior was tested with isolated Fcitx5 5.1.23 and
-Neovim 0.12.6 instances. The demos show Rime input in Neovide; cursor coloring
-was also checked in terminal Neovim running in Kitty.
+Isolated checks passed on Neovim 0.10.4 and 0.12.6 with Fcitx5 5.1.23, covering
+mode selection, custom mode lists, restoration, independent lock/cursor toggles,
+repeated setup, and exit cleanup. Signal matching was checked on a private
+D-Bus session. The demos show Rime input in Neovide; cursor coloring was also
+checked in terminal Neovim running in Kitty.
 
-Additional checks for the revised tray monitor, real GUI focus transitions,
-custom mode lists, and the minimum supported Neovim version are in progress.
+Real GUI focus transitions, tray signals emitted by Fcitx5 during an actual
+input-method switch, and the lazy.nvim installation path have not been tested.
 
 </details>
