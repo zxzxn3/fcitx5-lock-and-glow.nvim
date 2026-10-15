@@ -4,7 +4,8 @@ Mode-aware Fcitx5 locking and input-method cursor colors for Neovim.
 
 ## Demo
 
-Switching from English to Rime changes the cursor color in Neovide.
+Switching from English to Rime changes the cursor color in Neovide (also works
+in terminal Neovim; verified in Kitty).
 
 ![Input-method cursor colors in the upper fifth of Neovide](assets/cursor/demo-top-fifth.gif)
 
