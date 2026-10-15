@@ -1,3 +1,6 @@
+-- SPDX-License-Identifier: GPL-3.0-only
+-- Copyright (c) 2026 zxzx
+
 -- 文本模式允许中文，其余模式持续锁英文；restore=true 记忆并恢复文本选择。
 -- 重新聚焦时读取桌面选择，查询与切换串行执行。
 local M = {}

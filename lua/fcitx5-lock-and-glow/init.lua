@@ -1,3 +1,6 @@
+-- SPDX-License-Identifier: GPL-3.0-only
+-- Copyright (c) 2026 zxzx
+
 local M = {}
 
 -- Explicit setup only: requiring the plugin does not switch the desktop input method.

@@ -171,3 +171,8 @@ restoration, custom modes, startup recovery, and installation with vim.pack and
 lazy.nvim.
 
 </details>
+
+## License
+
+Licensed under the GNU General Public License v3.0 only (GPL-3.0-only).
+See [LICENSE](LICENSE).

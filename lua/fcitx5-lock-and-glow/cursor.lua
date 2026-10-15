@@ -1,3 +1,6 @@
+-- SPDX-License-Identifier: GPL-3.0-only
+-- Copyright (c) 2026 zxzx
+
 -- 根据状态源标记中文光标；通过 guicursor 指定高亮组。
 
 local M = {}

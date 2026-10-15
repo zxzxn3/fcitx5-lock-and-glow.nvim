@@ -1,3 +1,6 @@
+-- SPDX-License-Identifier: GPL-3.0-only
+-- Copyright (c) 2026 zxzx
+
 -- Standalone state source: Fcitx5 tray signals trigger queries; polling covers missing signals.
 local M = {}
 local listeners = {}
